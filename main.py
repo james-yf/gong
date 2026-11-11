@@ -64,6 +64,7 @@ def main():
     pygame.display.set_caption("GONG")
     mallet=Mallet(x=GAME_W//2-50, y=GAME_H//2)
     player_gong=Gong(x=GONG_W, y=GAME_H//2-GONG_H//2) 
+    cpu_gong=Gong(x=GAME_W-GONG_W, y=GAME_H//2-GONG_H//2) 
     running=True
     while running:
         for e in pygame.event.get():
@@ -79,8 +80,12 @@ def main():
         mallet.update()
         if player_gong.rect.colliderect(mallet.rect):
             mallet.horz_dir="right"
+        if cpu_gong.rect.colliderect(mallet.rect):
+            mallet.horiz_dir="left"
+        cpu_gong.rect.y=mallet.rect.y
         mallet.draw(surf)
         player_gong.draw(surf)
+        cpu_gong.draw(surf)
         pygame.transform.scale(surf, (SCREEN_W,SCREEN_H), screen)
         pygame.display.flip()
         clock.tick(FPS)
