@@ -9,6 +9,30 @@ BG=(255,0,0)
 FPS=60
 MALLET_SIZE=16
 MALLET_SPEED=5
+GONG_W=10
+GONG_H=50
+GONG_SPEED=5
+GONG_COLOR=(232,215,149)
+
+class Gong:
+    def __init__(self, x, y):
+        self.rect=pygame.Rect(x, y, GONG_W, GONG_H)
+
+    def move_up(self):
+        dy=-GONG_SPEED
+        if not self.move_in_bounds(dy): return
+        self.rect.y+=dy
+
+    def move_down(self):
+        dy=GONG_SPEED
+        if not self.move_in_bounds(dy): return
+        self.rect.y+=dy
+
+    def move_in_bounds(self, dy):
+        return self.rect.top+dy>=0 and self.rect.bottom+dy<=GAME_H
+
+    def draw(self, surf):
+        pygame.draw.rect(surf, GONG_COLOR, self.rect)
 
 class Mallet:
     def __init__(self, x, y):
@@ -39,15 +63,24 @@ def main():
     screen=pygame.display.set_mode((SCREEN_W,SCREEN_H))
     pygame.display.set_caption("GONG")
     mallet=Mallet(x=GAME_W//2-50, y=GAME_H//2)
+    player_gong=Gong(x=GONG_W, y=GAME_H//2-GONG_H//2) 
     running=True
     while running:
         for e in pygame.event.get():
             if e.type==pygame.QUIT:
                 running=False
                 break
+        keys=pygame.key.get_pressed()
+        if keys[pygame.K_UP]:
+            player_gong.move_up()
+        elif keys[pygame.K_DOWN]:
+            player_gong.move_down()
         surf.fill(BG)
         mallet.update()
+        if player_gong.rect.colliderect(mallet.rect):
+            mallet.horz_dir="right"
         mallet.draw(surf)
+        player_gong.draw(surf)
         pygame.transform.scale(surf, (SCREEN_W,SCREEN_H), screen)
         pygame.display.flip()
         clock.tick(FPS)
