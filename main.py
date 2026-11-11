@@ -62,27 +62,38 @@ def main():
     clock=pygame.time.Clock()
     screen=pygame.display.set_mode((SCREEN_W,SCREEN_H))
     pygame.display.set_caption("GONG")
-    mallet=Mallet(x=GAME_W//2-50, y=GAME_H//2)
+    font=pygame.font.Font(None,24)
+    start_txt=font.render("Press SPACE to start", True, (255,255,255))
+    start_txt_w, start_txt_h=start_txt.get_size()
+    mallet=Mallet(x=GAME_W//2-MALLET_SIZE//2, y=GAME_H//2)
     player_gong=Gong(x=GONG_W, y=GAME_H//2-GONG_H//2) 
     cpu_gong=Gong(x=GAME_W-GONG_W, y=GAME_H//2-GONG_H//2) 
+    started=False
     running=True
     while running:
         for e in pygame.event.get():
             if e.type==pygame.QUIT:
                 running=False
                 break
-        keys=pygame.key.get_pressed()
-        if keys[pygame.K_UP]:
-            player_gong.move_up()
-        elif keys[pygame.K_DOWN]:
-            player_gong.move_down()
+            if e.type==pygame.KEYDOWN:
+                if e.key==pygame.K_SPACE:
+                    started=True
+        if started:
+            keys=pygame.key.get_pressed()
+            if keys[pygame.K_UP]:
+                player_gong.move_up()
+            elif keys[pygame.K_DOWN]:
+                player_gong.move_down()
         surf.fill(BG)
-        mallet.update()
-        if player_gong.rect.colliderect(mallet.rect):
-            mallet.horz_dir="right"
-        if cpu_gong.rect.colliderect(mallet.rect):
-            mallet.horiz_dir="left"
-        cpu_gong.rect.y=mallet.rect.y
+        if started:
+            mallet.update()
+            if player_gong.rect.colliderect(mallet.rect):
+                mallet.horz_dir="right"
+            if cpu_gong.rect.colliderect(mallet.rect):
+                mallet.horiz_dir="left"
+            cpu_gong.rect.y=mallet.rect.y
+        if not started:
+            surf.blit(start_txt, (GAME_W//2-start_txt_w//2, GAME_H-1.5*start_txt_h))
         mallet.draw(surf)
         player_gong.draw(surf)
         cpu_gong.draw(surf)
