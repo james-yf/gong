@@ -53,13 +53,17 @@ def clamp_gong(gong):
     elif gong.rect.bottom > GAME_H:
         gong.rect.bottom=GAME_H
 
-# extract left and right check when doing scores later
 def handle_wall_collision(mallet):
-    if mallet.rect.left <= 0 or mallet.rect.right >= GAME_W:
-        mallet.bounce_x()
     if mallet.rect.top <= 0 or mallet.rect.bottom >= GAME_H:      
         mallet.bounce_y()
 
+def which_scorer(mallet):
+    if mallet.rect.left <= 0:
+        return "cpu"
+    elif mallet.rect.right >= GAME_W:
+        return "player"
+    return None
+    
 def main():
     pygame.init()
     surf=pygame.Surface((GAME_W,GAME_H))
@@ -72,6 +76,8 @@ def main():
     mallet=Mallet(x=GAME_W//2-MALLET_SIZE//2, y=GAME_H//2)
     player_gong=Gong(x=GONG_W, y=GAME_H//2-GONG_H//2) 
     cpu_gong=Gong(x=GAME_W-GONG_W*2, y=GAME_H//2-GONG_H//2) 
+    player_score=0
+    cpu_score=0
     started=False
     running=True
     while running:
@@ -92,6 +98,13 @@ def main():
         if started:
             mallet.update()
             handle_wall_collision(mallet)
+            scorer=which_scorer(mallet)
+            if scorer=="player":
+                mallet.bounce_x()
+                player_score+=1
+            elif scorer=="cpu":
+                mallet.bounce_x()
+                cpu_score+=1
             clamp_gong(player_gong)
             if player_gong.rect.colliderect(mallet.rect) or cpu_gong.rect.colliderect(mallet.rect):
                 mallet.bounce_x()
@@ -102,6 +115,10 @@ def main():
         mallet.draw(surf)
         player_gong.draw(surf)
         cpu_gong.draw(surf)
+        player_score_txt=font.render(f"{player_score}", True, (255,255,255))
+        cpu_score_txt=font.render(f"{cpu_score}", True, (255,255,255))
+        surf.blit(player_score_txt, (GAME_W//2-player_score_txt.get_width(), 0))
+        surf.blit(cpu_score_txt, (GAME_W//2+cpu_score_txt.get_width(), 0))
         pygame.transform.scale(surf, (SCREEN_W,SCREEN_H), screen)
         pygame.display.flip()
         clock.tick(FPS)
