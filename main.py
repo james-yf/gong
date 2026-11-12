@@ -19,17 +19,10 @@ class Gong:
         self.rect=pygame.Rect(x, y, GONG_W, GONG_H)
 
     def move_up(self):
-        dy=-GONG_SPEED
-        if not self.move_in_bounds(dy): return
-        self.rect.y+=dy
+        self.rect.y-=GONG_SPEED
 
     def move_down(self):
-        dy=GONG_SPEED
-        if not self.move_in_bounds(dy): return
-        self.rect.y+=dy
-
-    def move_in_bounds(self, dy):
-        return self.rect.top+dy>=0 and self.rect.bottom+dy<=GAME_H
+        self.rect.y+=GONG_SPEED
 
     def draw(self, surf):
         pygame.draw.rect(surf, GONG_COLOR, self.rect)
@@ -51,6 +44,12 @@ class Mallet:
 
     def draw(self, surf):
         surf.blit(self.mall, (self.rect.x,self.rect.y))
+
+def clamp_gong(gong):
+    if gong.rect.top < 0:
+        gong.rect.top=0
+    elif gong.rect.bottom > GAME_H:
+        gong.rect.bottom=GAME_H
 
 def main():
     pygame.init()
@@ -83,9 +82,11 @@ def main():
         surf.fill(BG)
         if started:
             mallet.update()
+            clamp_gong(player_gong)
             if player_gong.rect.colliderect(mallet.rect) or cpu_gong.rect.colliderect(mallet.rect):
                 mallet.vx=-mallet.vx
             cpu_gong.rect.y=mallet.rect.y
+            clamp_gong(cpu_gong)
         if not started:
             surf.blit(start_txt, (GAME_W//2-start_txt_w//2, GAME_H-1.5*start_txt_h))
         mallet.draw(surf)
