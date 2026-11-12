@@ -71,7 +71,7 @@ def main():
     start_txt_w, start_txt_h=start_txt.get_size()
     mallet=Mallet(x=GAME_W//2-MALLET_SIZE//2, y=GAME_H//2)
     player_gong=Gong(x=GONG_W, y=GAME_H//2-GONG_H//2) 
-    cpu_gong=Gong(x=GAME_W-GONG_W, y=GAME_H//2-GONG_H//2) 
+    cpu_gong=Gong(x=GAME_W-GONG_W*2, y=GAME_H//2-GONG_H//2) 
     started=False
     running=True
     while running:
