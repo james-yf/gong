@@ -38,20 +38,16 @@ class Mallet:
     def __init__(self, x, y):
         self.mall=pygame.image.load("mallet.png").convert_alpha()
         self.rect=pygame.Rect(x,y,MALLET_SIZE,MALLET_SIZE)
-        self.vert_dir="up"
-        self.horz_dir="left"
+        self.vx=5
+        self.vy=5
 
     def update(self):
-        if   self.rect.x      <= 0      : self.horz_dir="right"
-        elif self.rect.right  >= GAME_W : self.horz_dir="left"
-        if   self.rect.y      <= 0      : self.vert_dir="down"
-        elif self.rect.bottom >= GAME_H : self.vert_dir="up"
-
-        if self.horz_dir=="left" : self.rect.x -= MALLET_SPEED
-        else                     : self.rect.x += MALLET_SPEED
-
-        if self.vert_dir=="up"   : self.rect.y -= MALLET_SPEED
-        else                     : self.rect.y += MALLET_SPEED
+        if self.rect.left <= 0 or self.rect.right  >= GAME_W:
+            self.vx=-self.vx
+        if self.rect.top  <= 0 or self.rect.bottom >= GAME_H:      
+            self.vy=-self.vy
+        self.rect.x+=self.vx
+        self.rect.y+=self.vy
 
     def draw(self, surf):
         surf.blit(self.mall, (self.rect.x,self.rect.y))
@@ -87,10 +83,8 @@ def main():
         surf.fill(BG)
         if started:
             mallet.update()
-            if player_gong.rect.colliderect(mallet.rect):
-                mallet.horz_dir="right"
-            if cpu_gong.rect.colliderect(mallet.rect):
-                mallet.horiz_dir="left"
+            if player_gong.rect.colliderect(mallet.rect) or cpu_gong.rect.colliderect(mallet.rect):
+                mallet.vx=-mallet.vx
             cpu_gong.rect.y=mallet.rect.y
         if not started:
             surf.blit(start_txt, (GAME_W//2-start_txt_w//2, GAME_H-1.5*start_txt_h))
