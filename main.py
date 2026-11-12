@@ -35,12 +35,14 @@ class Mallet:
         self.vy=5
 
     def update(self):
-        if self.rect.left <= 0 or self.rect.right  >= GAME_W:
-            self.vx=-self.vx
-        if self.rect.top  <= 0 or self.rect.bottom >= GAME_H:      
-            self.vy=-self.vy
         self.rect.x+=self.vx
         self.rect.y+=self.vy
+
+    def bounce_x(self):
+        self.vx=-self.vx
+
+    def bounce_y(self):
+        self.vy=-self.vy
 
     def draw(self, surf):
         surf.blit(self.mall, (self.rect.x,self.rect.y))
@@ -50,6 +52,13 @@ def clamp_gong(gong):
         gong.rect.top=0
     elif gong.rect.bottom > GAME_H:
         gong.rect.bottom=GAME_H
+
+# extract left and right check when doing scores later
+def handle_wall_collision(mallet):
+    if mallet.rect.left <= 0 or mallet.rect.right >= GAME_W:
+        mallet.bounce_x()
+    if mallet.rect.top <= 0 or mallet.rect.bottom >= GAME_H:      
+        mallet.bounce_y()
 
 def main():
     pygame.init()
@@ -82,9 +91,10 @@ def main():
         surf.fill(BG)
         if started:
             mallet.update()
+            handle_wall_collision(mallet)
             clamp_gong(player_gong)
             if player_gong.rect.colliderect(mallet.rect) or cpu_gong.rect.colliderect(mallet.rect):
-                mallet.vx=-mallet.vx
+                mallet.bounce_x()
             cpu_gong.rect.y=mallet.rect.y
             clamp_gong(cpu_gong)
         if not started:
