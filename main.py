@@ -15,14 +15,18 @@ GONG_H=50
 GONG_SPEED=5
 GONG_COLOR=(232,215,149)
 SCORE_PADDING=5
+WIN_SCORE=10
 
 class Gong:
     def __init__(self, x, y):
         self.rect=pygame.Rect(x, y, GONG_W, GONG_H)
+        self.start_y=y
     def move_up(self):
         self.rect.y-=GONG_SPEED
     def move_down(self):
         self.rect.y+=GONG_SPEED
+    def reset(self):
+        self.rect.y=self.start_y
     def draw(self, surf):
         pygame.draw.rect(surf, GONG_COLOR, self.rect)
 
@@ -92,7 +96,15 @@ def main():
     player_score=0
     cpu_score=0
     time_scored=None
+
+    player_won_txt=font.render("Bang. U Won!", True, (255,255,255))
+    player_won_txt_w, won_txt_h=player_won_txt.get_size()
+    cpu_won_txt=font.render("Bang. CPU Won!", True, (255,255,255))
+    cpu_won_txt_w=cpu_won_txt.get_width()
+    replay_txt=font.render("Press R to replay", True, (255,255,255))
+    replay_txt_w, replay_txt_h=replay_txt.get_size()
     
+    winner=None
     state="start"
     running=True
 
@@ -103,6 +115,13 @@ def main():
                 break
             if e.type==pygame.KEYDOWN:
                 if e.key==pygame.K_SPACE:
+                    state="play"
+                if state=="won" and e.key==pygame.K_r:
+                    mallet.reset()
+                    player_gong.reset()
+                    cpu_gong.reset()
+                    cpu_score=0
+                    player_score=0
                     state="play"
 
         if state=="play":
@@ -123,8 +142,16 @@ def main():
                     player_score+=1
                 elif scorer=="cpu":
                     cpu_score+=1
-                state="scored"
-                time_scored=pygame.time.get_ticks()
+                
+                if player_score>=WIN_SCORE:
+                    winner="player"
+                    state="won"
+                elif cpu_score>=WIN_SCORE:
+                    winner="cpu"
+                    state="won"
+                else:
+                    state="scored"
+                    time_scored=pygame.time.get_ticks()
             else:
                 handle_gong_collision(mallet, player_gong)
                 handle_gong_collision(mallet, cpu_gong)
@@ -144,6 +171,13 @@ def main():
         mallet.draw(surf)
         player_gong.draw(surf)
         cpu_gong.draw(surf)
+
+        if state=="won":
+            if winner=="player":
+                surf.blit(player_won_txt, (GAME_W//2-player_won_txt_w//2, GAME_H//2))
+            elif winner=="cpu":
+                surf.blit(cpu_won_txt, (GAME_W//2-cpu_won_txt_w//2, GAME_H//2))
+            surf.blit(replay_txt, (GAME_W//2-replay_txt_w//2, GAME_H//2+won_txt_h))
 
         player_score_txt=font.render(f"{player_score}", True, (255,255,255))
         cpu_score_txt=font.render(f"{cpu_score}", True, (255,255,255))
