@@ -14,6 +14,7 @@ GONG_W=10
 GONG_H=50
 GONG_SPEED=5
 GONG_COLOR=(232,215,149)
+SCORE_PADDING=5
 
 class Gong:
     def __init__(self, x, y):
@@ -146,8 +147,8 @@ def main():
 
         player_score_txt=font.render(f"{player_score}", True, (255,255,255))
         cpu_score_txt=font.render(f"{cpu_score}", True, (255,255,255))
-        surf.blit(player_score_txt, (GAME_W//2-player_score_txt.get_width(), 0))
-        surf.blit(cpu_score_txt, (GAME_W//2+cpu_score_txt.get_width(), 0))
+        surf.blit(player_score_txt, (GAME_W//2-player_score_txt.get_width()-SCORE_PADDING, 0))
+        surf.blit(cpu_score_txt, (GAME_W//2+SCORE_PADDING, 0))
         
         pygame.transform.scale(surf, (SCREEN_W,SCREEN_H), screen)
 
