@@ -124,7 +124,7 @@ def main():
                     player_score=0
                     state="play"
 
-        if state=="play":
+        if state != "won":
             keys=pygame.key.get_pressed()
             if keys[pygame.K_UP]:
                 player_gong.move_up()
@@ -133,6 +133,7 @@ def main():
                 player_gong.move_down()
                 clamp_gong(player_gong)
 
+        if state=="play":
             mallet.update()
             handle_wall_collision(mallet)
 
