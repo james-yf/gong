@@ -29,6 +29,8 @@ class Mallet:
     def __init__(self, x, y):
         self.mall=pygame.image.load("mallet.png").convert_alpha()
         self.rect=pygame.Rect(x,y,MALLET_SIZE,MALLET_SIZE)
+        self.start_x=x
+        self.start_y=y
         self.vx=5
         self.vy=5
 
@@ -41,6 +43,10 @@ class Mallet:
 
     def bounce_y(self):
         self.vy=-self.vy
+
+    def reset(self):
+        self.rect.x=self.start_x
+        self.rect.y=self.start_y
 
     def draw(self, surf):
         surf.blit(self.mall, (self.rect.x,self.rect.y))
@@ -84,8 +90,9 @@ def main():
     
     player_score=0
     cpu_score=0
+    time_scored=None
     
-    started=False
+    state="start"
     running=True
 
     while running:
@@ -95,9 +102,9 @@ def main():
                 break
             if e.type==pygame.KEYDOWN:
                 if e.key==pygame.K_SPACE:
-                    started=True
+                    state="play"
 
-        if started:
+        if state=="play":
             keys=pygame.key.get_pressed()
             if keys[pygame.K_UP]:
                 player_gong.move_up()
@@ -115,16 +122,22 @@ def main():
                     player_score+=1
                 elif scorer=="cpu":
                     cpu_score+=1
-                mallet.bounce_x()
+                state="scored"
+                time_scored=pygame.time.get_ticks()
             else:
                 handle_gong_collision(mallet, player_gong)
                 handle_gong_collision(mallet, cpu_gong)
                 cpu_gong.rect.y=mallet.rect.y
                 clamp_gong(cpu_gong)
 
+        if state=="scored":
+            if pygame.time.get_ticks() - time_scored >= 500:
+                mallet.reset()
+                state="play"
+
         surf.fill(BG)
 
-        if not started: 
+        if state=="start": 
             surf.blit(start_txt, (GAME_W//2-start_txt_w//2, GAME_H-1.5*start_txt_h))
 
         mallet.draw(surf)
