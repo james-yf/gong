@@ -114,7 +114,7 @@ def main():
                 running=False
                 break
             if e.type==pygame.KEYDOWN:
-                if e.key==pygame.K_SPACE:
+                if state=="start" and e.key==pygame.K_SPACE:
                     state="play"
                 if state=="won" and e.key==pygame.K_r:
                     mallet.reset()
