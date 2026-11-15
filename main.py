@@ -132,15 +132,34 @@ class Mallet:
     def change_img(self, img):
         self.img=img
 
-    def draw(self, surf):
+    #the mallet asset is drawn at 45(CCW),
+    #so rot is relative to that fact.
+    def rot_angle(self):
+        if self.vx>0 and self.vy>0:
+            angle=-180
+        elif self.vx>0 and self.vy<0:
+            angle=-90
+        elif self.vx<0 and self.vy>0:
+            angle=90
+        elif self.vx<0 and self.vy<0:
+            angle=0
+        return angle
+
+    #extracted this so I can easily debug without the trail by just
+    #commenting the function call.
+    def draw_trail(self, surf):
         n=len(self.trail)
         if n:
             step=200//n
+            rot=pygame.transform.rotate(self.img, self.rot_angle())
             for i, r in enumerate(self.trail):
-                self.img.set_alpha(step*i+step)
-                surf.blit(self.img, (r.x, r.y))
-            self.img.set_alpha(255)
-        surf.blit(self.img, (self.rect.x,self.rect.y))
+                rot.set_alpha(step*i+step)
+                surf.blit(rot, (r.x, r.y))
+
+    def draw(self, surf):
+        self.draw_trail(surf)
+        rot=pygame.transform.rotate(self.img, self.rot_angle())
+        surf.blit(rot, (self.rect.x,self.rect.y))
 
 def clamp_gong(gong):
     if gong.rect.top < 0:
