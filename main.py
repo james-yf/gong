@@ -24,17 +24,17 @@ THEMES = {
         "bg": (172,50,50),
         "layers": [
             { 
-                "img": IMGS / "tree.png", 
+                "img": IMGS / "tree-white.png", 
                 "alpha": 120
             },
             {
                 "img": IMGS / "luo.png"
             },
             {
-                "img": IMGS / "frame.png"
+                "img": IMGS / "frame-brown.png"
             }
         ],
-        "mallet": IMGS / "mallet.png",
+        "mallet": IMGS / "mallet-white.png",
         "gong": (0,0,0),
         "score": (255,255,0),
         "start": (255,255,0),
@@ -52,7 +52,7 @@ THEMES = {
                 "img": IMGS / "luo.png"
             },
             {
-                "img": IMGS / "frame-white.png"
+                "img": IMGS / "frame-black-dec.png"
             }
         ],
         "mallet": IMGS / "mallet-red.png",
@@ -96,6 +96,8 @@ class Gong:
         self.rect.y+=GONG_SPEED
     def reset(self):
         self.rect.y=self.start_y
+    def change_color(self, color):
+        self.color=color
     def draw(self, surf):
         pygame.draw.rect(surf, self.color, self.rect)
 
@@ -121,6 +123,9 @@ class Mallet:
     def reset(self):
         self.rect.x=self.start_x
         self.rect.y=self.start_y
+
+    def change_img(self, img):
+        self.img=img
 
     def draw(self, surf):
         surf.blit(self.img, (self.rect.x,self.rect.y))
@@ -154,12 +159,12 @@ def main():
     screen=pygame.display.set_mode((SCREEN_W, SCREEN_H))
     pygame.display.set_caption("GONG")
 
-    themes=load_themes()
-    theme=themes["red"]
+    themes=load_themes() 
+    theme_names=list(themes)
+    theme_i=0
+    theme=themes[theme_names[theme_i]]
     
     font=pygame.font.Font(None,24)
-    start_txt=font.render("Press SPACE to start", True, theme["start"])
-    start_txt_w, start_txt_h=start_txt.get_size()
 
     mallet=Mallet(x=GAME_W//2-MALLET_SIZE//2, y=GAME_H//2, img=theme["mallet"])
     player_gong=Gong(x=GONG_W, y=GAME_H//2-GONG_H//2, color=theme["gong"]) 
@@ -169,13 +174,6 @@ def main():
     cpu_score=0
     time_scored=None
 
-    player_won_txt=font.render("Bang. U Won!", True, theme["win"])
-    player_won_txt_w, won_txt_h=player_won_txt.get_size()
-    cpu_won_txt=font.render("Bang. CPU Won!", True, theme["win"])
-    cpu_won_txt_w=cpu_won_txt.get_width()
-    replay_txt=font.render("Press R to replay", True, theme["replay"])
-    replay_txt_w, replay_txt_h=replay_txt.get_size()
-    
     winner=None
     state="start"
     running=True
@@ -195,6 +193,12 @@ def main():
                     cpu_score=0
                     player_score=0
                     state="play"
+                if state in ("start", "won") and e.key==pygame.K_t:
+                    theme_i=(theme_i+1) % len(theme_names)
+                    theme=themes[theme_names[theme_i]]
+                    mallet.change_img(theme["mallet"])
+                    player_gong.change_color(theme["gong"])
+                    cpu_gong.change_color(theme["gong"])
 
         if state != "won":
             keys=pygame.key.get_pressed()
@@ -241,6 +245,8 @@ def main():
             surf.blit(l, (0,0))
 
         if state=="start": 
+            start_txt=font.render("Press SPACE to start", True, theme["start"])
+            start_txt_w, start_txt_h=start_txt.get_size()
             surf.blit(start_txt, (GAME_W//2-start_txt_w//2, GAME_H-1.5*start_txt_h))
 
         mallet.draw(surf)
@@ -249,10 +255,12 @@ def main():
 
         if state=="won":
             if winner=="player":
-                surf.blit(player_won_txt, (GAME_W//2-player_won_txt_w//2, GAME_H//2))
+                winner_txt=font.render("Bang. U Won!", True, theme["win"])
             elif winner=="cpu":
-                surf.blit(cpu_won_txt, (GAME_W//2-cpu_won_txt_w//2, GAME_H//2))
-            surf.blit(replay_txt, (GAME_W//2-replay_txt_w//2, GAME_H//2+won_txt_h))
+                winner_txt=font.render("Bang. CPU Won!", True, theme["win"])
+            replay_txt=font.render("Press R to replay", True, theme["replay"])
+            surf.blit(winner_txt, (GAME_W//2-winner_txt.get_width()//2, GAME_H//2))
+            surf.blit(replay_txt, (GAME_W//2-replay_txt.get_width()//2, GAME_H//2+winner_txt.get_height()))
 
         player_score_txt=font.render(f"{player_score}", True, theme["score"])
         cpu_score_txt=font.render(f"{cpu_score}", True, theme["score"])
