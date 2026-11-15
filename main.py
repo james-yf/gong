@@ -18,6 +18,7 @@ WIN_SCORE=10
 
 ASSETS=Path(__file__).parent / "assets"
 IMGS=ASSETS / "imgs"
+SOUNDS=ASSETS / "sounds"
 
 THEMES = {
     "red": {
@@ -136,14 +137,16 @@ def clamp_gong(gong):
     elif gong.rect.bottom > GAME_H:
         gong.rect.bottom=GAME_H
 
-def handle_wall_collision(mallet):
+def handle_wall_collision(mallet, sfx):
     if mallet.rect.top <= 0 or mallet.rect.bottom >= GAME_H:      
         mallet.bounce_y()
+        sfx.play()
 
-def handle_gong_collision(mallet, gong):
+def handle_gong_collision(mallet, gong, sfx):
     if not gong.rect.colliderect(mallet.rect):
         return
     mallet.bounce_x()
+    sfx.play()
 
 def which_scorer(mallet):
     if mallet.rect.left <= 0:
@@ -154,6 +157,11 @@ def which_scorer(mallet):
 
 def main():
     pygame.init()
+
+    pygame.mixer.init()
+    hit_sfx=pygame.mixer.Sound(SOUNDS / "hit.wav")
+    won_sfx=pygame.mixer.Sound(SOUNDS / "gong.wav")
+
     surf=pygame.Surface((GAME_W, GAME_H))
     clock=pygame.time.Clock()
     screen=pygame.display.set_mode((SCREEN_W, SCREEN_H))
@@ -211,7 +219,7 @@ def main():
 
         if state=="play":
             mallet.update()
-            handle_wall_collision(mallet)
+            handle_wall_collision(mallet, hit_sfx)
 
             scorer=which_scorer(mallet)
             if scorer:
@@ -223,15 +231,17 @@ def main():
                 if player_score>=WIN_SCORE:
                     winner="player"
                     state="won"
+                    won_sfx.play()
                 elif cpu_score>=WIN_SCORE:
                     winner="cpu"
                     state="won"
+                    won_sfx.play()
                 else:
                     state="scored"
                     time_scored=pygame.time.get_ticks()
             else:
-                handle_gong_collision(mallet, player_gong)
-                handle_gong_collision(mallet, cpu_gong)
+                handle_gong_collision(mallet, player_gong, hit_sfx)
+                handle_gong_collision(mallet, cpu_gong, hit_sfx)
                 cpu_gong.rect.y=mallet.rect.y
                 clamp_gong(cpu_gong)
 
