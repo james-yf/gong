@@ -110,8 +110,12 @@ class Mallet:
         self.start_y=y
         self.vx=5
         self.vy=5
+        self.trail=[]
 
     def update(self):
+        self.trail.append(self.rect.copy())
+        if len(self.trail)>=5:
+            self.trail.pop(0)
         self.rect.x+=self.vx
         self.rect.y+=self.vy
 
@@ -129,6 +133,13 @@ class Mallet:
         self.img=img
 
     def draw(self, surf):
+        n=len(self.trail)
+        if n:
+            step=200//n
+            for i, r in enumerate(self.trail):
+                self.img.set_alpha(step*i+step)
+                surf.blit(self.img, (r.x, r.y))
+            self.img.set_alpha(255)
         surf.blit(self.img, (self.rect.x,self.rect.y))
 
 def clamp_gong(gong):
