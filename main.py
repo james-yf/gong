@@ -41,6 +41,27 @@ THEMES = {
         "win": (255,255,0),
         "replay": (255,255,0),
     },
+    "white": {
+        "bg": (255,255,255),
+        "layers": [
+            { 
+                "img": IMGS / "tree-pink.png", 
+                "alpha": 120
+            },
+            {
+                "img": IMGS / "luo.png"
+            },
+            {
+                "img": IMGS / "frame-white.png"
+            }
+        ],
+        "mallet": IMGS / "mallet-red.png",
+        "gong": (0,0,0),
+        "score": (255,0,0),
+        "start": (255,0,0),
+        "win": (255,0,0),
+        "replay": (255,0,0),
+    },
 }
 
 def load_layer(layer):
