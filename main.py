@@ -1,26 +1,74 @@
 import pygame
 import sys
+from pathlib import Path
 
 GAME_W=320
 GAME_H=240
 SCALE_FACTOR=2
 SCREEN_W=GAME_W*SCALE_FACTOR
 SCREEN_H=GAME_H*SCALE_FACTOR
-BG=(255,0,0)
 FPS=60
 MALLET_SIZE=16
 MALLET_SPEED=5
 GONG_W=10
 GONG_H=50
 GONG_SPEED=5
-GONG_COLOR=(232,215,149)
 SCORE_PADDING=5
 WIN_SCORE=10
 
+ASSETS=Path(__file__).parent / "assets"
+IMGS=ASSETS / "imgs"
+
+THEMES = {
+    "red": {
+        "bg": (172,50,50),
+        "layers": [
+            { 
+                "img": IMGS / "tree.png", 
+                "alpha": 120
+            },
+            {
+                "img": IMGS / "luo.png"
+            },
+            {
+                "img": IMGS / "frame.png"
+            }
+        ],
+        "mallet": IMGS / "mallet.png",
+        "gong": (0,0,0),
+        "score": (255,255,0),
+        "start": (255,255,0),
+        "win": (255,255,0),
+        "replay": (255,255,0),
+    },
+}
+
+def load_layer(layer):
+    img=pygame.image.load(layer["img"]).convert_alpha()
+    if "alpha" in layer:
+        img.set_alpha(layer["alpha"])
+    return img
+
+def load_themes():
+    themes={}
+    for name, theme in THEMES.items():
+        themes[name]={
+            "bg": theme["bg"],
+            "layers": [load_layer(l) for l in theme["layers"]],
+            "mallet": pygame.image.load(theme["mallet"]).convert_alpha(),
+            "gong": theme["gong"],
+            "score": theme["score"],
+            "start": theme["start"],
+            "win": theme["win"],
+            "replay": theme["replay"],
+        }
+    return themes
+
 class Gong:
-    def __init__(self, x, y):
+    def __init__(self, x, y, color):
         self.rect=pygame.Rect(x, y, GONG_W, GONG_H)
         self.start_y=y
+        self.color=color
     def move_up(self):
         self.rect.y-=GONG_SPEED
     def move_down(self):
@@ -28,11 +76,11 @@ class Gong:
     def reset(self):
         self.rect.y=self.start_y
     def draw(self, surf):
-        pygame.draw.rect(surf, GONG_COLOR, self.rect)
+        pygame.draw.rect(surf, self.color, self.rect)
 
 class Mallet:
-    def __init__(self, x, y):
-        self.mall=pygame.image.load("mallet.png").convert_alpha()
+    def __init__(self, x, y, img):
+        self.img=img
         self.rect=pygame.Rect(x,y,MALLET_SIZE,MALLET_SIZE)
         self.start_x=x
         self.start_y=y
@@ -54,7 +102,7 @@ class Mallet:
         self.rect.y=self.start_y
 
     def draw(self, surf):
-        surf.blit(self.mall, (self.rect.x,self.rect.y))
+        surf.blit(self.img, (self.rect.x,self.rect.y))
 
 def clamp_gong(gong):
     if gong.rect.top < 0:
@@ -84,24 +132,27 @@ def main():
     clock=pygame.time.Clock()
     screen=pygame.display.set_mode((SCREEN_W, SCREEN_H))
     pygame.display.set_caption("GONG")
+
+    themes=load_themes()
+    theme=themes["red"]
     
     font=pygame.font.Font(None,24)
-    start_txt=font.render("Press SPACE to start", True, (255,255,255))
+    start_txt=font.render("Press SPACE to start", True, theme["start"])
     start_txt_w, start_txt_h=start_txt.get_size()
 
-    mallet=Mallet(x=GAME_W//2-MALLET_SIZE//2, y=GAME_H//2)
-    player_gong=Gong(x=GONG_W, y=GAME_H//2-GONG_H//2) 
-    cpu_gong=Gong(x=GAME_W-GONG_W*2, y=GAME_H//2-GONG_H//2) 
+    mallet=Mallet(x=GAME_W//2-MALLET_SIZE//2, y=GAME_H//2, img=theme["mallet"])
+    player_gong=Gong(x=GONG_W, y=GAME_H//2-GONG_H//2, color=theme["gong"]) 
+    cpu_gong=Gong(x=GAME_W-GONG_W*2, y=GAME_H//2-GONG_H//2, color=theme["gong"]) 
     
     player_score=0
     cpu_score=0
     time_scored=None
 
-    player_won_txt=font.render("Bang. U Won!", True, (255,255,255))
+    player_won_txt=font.render("Bang. U Won!", True, theme["win"])
     player_won_txt_w, won_txt_h=player_won_txt.get_size()
-    cpu_won_txt=font.render("Bang. CPU Won!", True, (255,255,255))
+    cpu_won_txt=font.render("Bang. CPU Won!", True, theme["win"])
     cpu_won_txt_w=cpu_won_txt.get_width()
-    replay_txt=font.render("Press R to replay", True, (255,255,255))
+    replay_txt=font.render("Press R to replay", True, theme["replay"])
     replay_txt_w, replay_txt_h=replay_txt.get_size()
     
     winner=None
@@ -164,7 +215,9 @@ def main():
                 mallet.reset()
                 state="play"
 
-        surf.fill(BG)
+        surf.fill(theme["bg"])
+        for l in theme["layers"]:
+            surf.blit(l, (0,0))
 
         if state=="start": 
             surf.blit(start_txt, (GAME_W//2-start_txt_w//2, GAME_H-1.5*start_txt_h))
@@ -180,8 +233,8 @@ def main():
                 surf.blit(cpu_won_txt, (GAME_W//2-cpu_won_txt_w//2, GAME_H//2))
             surf.blit(replay_txt, (GAME_W//2-replay_txt_w//2, GAME_H//2+won_txt_h))
 
-        player_score_txt=font.render(f"{player_score}", True, (255,255,255))
-        cpu_score_txt=font.render(f"{cpu_score}", True, (255,255,255))
+        player_score_txt=font.render(f"{player_score}", True, theme["score"])
+        cpu_score_txt=font.render(f"{cpu_score}", True, theme["score"])
         surf.blit(player_score_txt, (GAME_W//2-player_score_txt.get_width()-SCORE_PADDING, 0))
         surf.blit(cpu_score_txt, (GAME_W//2+SCORE_PADDING, 0))
         
