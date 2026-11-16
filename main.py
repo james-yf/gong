@@ -247,8 +247,10 @@ def main():
                 player_gong.move_down()
                 clamp_gong(player_gong)
 
-        if state=="play":
+        if state in ("play", "scored"):
             mallet.update()
+
+        if state=="play":
             handle_wall_collision(mallet, hit_sfx)
 
             scorer=which_scorer(mallet)
