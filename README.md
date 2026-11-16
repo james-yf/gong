@@ -7,7 +7,7 @@
 Pong but Gong.
 
 # Aims:
-- Watch the projectile bouncing around my screen 
+- Watch the ball bouncing around on my screen 
 - Vs. the computer
 
 # Future improvements:
